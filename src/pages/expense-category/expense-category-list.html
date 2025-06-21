@@ -1,0 +1,53 @@
+    
+    <link href="assets/css/expense-category/expense-category-list.css" rel="stylesheet">
+
+    <div class="container mt-4">
+        <div class="card">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-0">Categorias de Despesas</h2>
+                    <small class="text-muted">Gerenciamento de categoria de despesas cadastradas.</small>
+                </div>
+                <button id="btn-expense-category-insert" class="btn btn-primary btn-sm" onclick="loadContent('expense-category', 'expense-category-insert')">
+                    ➕ Nova Categoria de Despesa
+                </button>
+            </div>
+
+            <div class="card p-3 mb-3">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <input type="text" id="filterText" class="form-control form-control-sm w-100" placeholder="🔍 Digite para filtrar..." onkeyup="debounceFilterExpensesCategories()"/>
+                    </div>
+                    <div class="col-md-6 d-flex justify-content-end mt-2 mt-md-0">
+                        <div class="form-check me-3">
+                            <input class="form-check-input" type="radio" name="filterType" id="filterByName" value="name" checked>
+                            <label class="form-check-label form-control-sm" for="filterByName">Filtrar por Nome</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover table-bordered align-middle">
+                        <thead class="table-secondary">
+                            <tr>
+                                <th class="text-center font-size">
+                                    Nome
+                                    <button onclick="loadExpensesCategoriesOrdered(API_ROUTES.EXPENSE_CATEGORIES_ORDERED_ASYNC('Name', 'asc'))" class="sort-button asc">▲</button>
+                                    <button onclick="loadExpensesCategoriesOrdered(API_ROUTES.EXPENSE_CATEGORIES_ORDERED_ASYNC('Name', 'desc'))" class="sort-button desc">▼</button>
+                                </th>
+                                <th class="text-center font-size">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="expense-category-table-body">
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">Carregando...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+    </div>

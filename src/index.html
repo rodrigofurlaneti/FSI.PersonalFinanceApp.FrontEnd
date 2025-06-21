@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Personal Finance</title>
+
+    <!-- Icones Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <!-- Estilos -->
+    <link href="assets/css/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/css/index.css" rel="stylesheet">
+</head>
+
+<body>
+
+    <!-- Menu lateral -->
+    <div class="sidebar">
+        <h4 class="text-white">Menu</h4>
+        <a href="#" onclick="loadContent('home', 'home')">Home</a>
+        <a href="#" onclick="loadContent('expense', 'expense-list')">Despesa</a>
+        <a href="#" onclick="loadContent('expense-category', 'expense-category-list')">Categoria de Despesa</a>
+        <a href="#" onclick="loadContent('income', 'income-list')">Renda</a>
+        <a href="#" onclick="loadContent('income-category', 'income-category-list')">Categoria de Renda</a>
+        <a href="#" onclick="loadContent('config', 'config')">Configurações</a>
+    </div>
+
+    <!-- Conteúdo principal -->
+    <div class="content" id="main-content">
+        <h2>Bem-vindo</h2>
+        <p>Selecione uma opção no menu para começar.</p>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="assets/js/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/routes.js"></script>
+    <script src="assets/js/index.js"></script>
+</body>
+
+</html>

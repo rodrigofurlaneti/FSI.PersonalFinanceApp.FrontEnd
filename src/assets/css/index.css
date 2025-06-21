@@ -1,0 +1,30 @@
+body {
+    display: flex;
+    min-height: 100vh;
+    margin: 0;
+  }
+  
+  .sidebar {
+    width: 220px;
+    background-color: #343a40;
+    padding: 20px;
+  }
+  
+  .sidebar a {
+    color: white;
+    display: block;
+    padding: 10px;
+    text-decoration: none;
+    border-radius: 5px;
+  }
+  
+  .sidebar a:hover {
+    background-color: #495057;
+  }
+  
+  .content {
+    flex-grow: 1;
+    padding: 20px;
+    background-color: #f8f9fa;
+  }
+  

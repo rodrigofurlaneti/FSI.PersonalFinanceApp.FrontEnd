@@ -1,0 +1,63 @@
+
+    <div class="container mt-4">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h2 class="mb-0">Editar Despesa</h2>
+                <small class="text-muted">Preencha os dados para editar uma cadastrada despesa.</small>
+            </div>
+            <div class="card-body">
+                <form id="expenseFormUpdate">
+                    <!-- Nome e Descrição -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Nome</label>
+                            <input type="text" class="form-control form-control-sm" id="name" placeholder="Ex: Conta de Luz" required autofocus>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Descrição</label>
+                            <input type="text" class="form-control form-control-sm" id="description" placeholder="Ex: Fatura referente a Maio/2025">
+                        </div>
+                    </div>
+
+                    <!-- Categoria e Valor -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Categoria da Despesa</label>
+                            <select id="expenseCategory" name="expenseCategory" class="form-control form-control-sm" required>
+                                <option value="">Selecione uma categoria</option>
+                                <!-- Opções devem ser carregadas dinamicamente -->
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Valor (R$)</label>
+                            <input type="text" class="form-control form-control-sm" id="amount" placeholder="R$ 0,00" oninput="maskMoney(this)" required>
+                        </div>
+                    </div>
+
+                    <!-- Datas -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Data de Vencimento</label>
+                            <input type="date" class="form-control form-control-sm" id="dueDate" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Data de Pagamento</label>
+                            <input type="date" class="form-control form-control-sm" id="paidAt">
+                        </div>
+                    </div>
+
+                    <!-- Checkbox Ativo -->
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="isActive" checked>
+                        <label class="form-check-label" for="isActive">Despesa Ativa</label>
+                    </div>
+
+                    <!-- Botões -->
+                    <div class="d-flex justify-content-end gap-2">
+                        <button type="submit" class="btn btn-success btn-sm">💾 Editar</button>
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="loadContent('expense-list')">🔙 Voltar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
