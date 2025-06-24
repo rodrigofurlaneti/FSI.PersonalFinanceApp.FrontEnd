@@ -17,6 +17,15 @@ const API_ROUTES = {
     EXPENSES_UPDATE_ASYNC: `${API_BASE_URL}/expenses/async/{id}`,
     EXPENSES_UPDATE_SYNC: `${API_BASE_URL}/expenses/sync/{id}`,
 
+    // Expenses - Event Driven via Messaging
+    EXPENSES_EVENT_CREATE: `${API_BASE_URL}/expenses/async/event/create`,
+    EXPENSES_EVENT_GETALL: `${API_BASE_URL}/expenses/async/event/getall`,
+    EXPENSES_EVENT_GETBYID: (id) => `${API_BASE_URL}/expenses/async/event/getbyid/${id}`,
+    EXPENSES_EVENT_UPDATE: (id) => `${API_BASE_URL}/expenses/async/event/update/${id}`,
+    EXPENSES_EVENT_DELETE: (id) => `${API_BASE_URL}/expenses/async/event/delete/${id}`,
+    EXPENSES_EVENT_RESULT: (messagingId) => `${API_BASE_URL}/expenses/async/event/result/${messagingId}`,
+
+
     // Expense Categories
     EXPENSE_CATEGORIES_ASYNC: `${API_BASE_URL}/expense-categories/async`,
     EXPENSE_CATEGORIES_SYNC: `${API_BASE_URL}/expense-categories/sync`,

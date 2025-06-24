@@ -73,13 +73,18 @@ async function loadExpenseCategories() {
     if (!select) return;
 
     try {
-        const response = await fetch(API_ROUTES.EXPENSE_CATEGORIES_ASYNC);
-        if (!response.ok) throw new Error('Erro ao carregar categorias.');
+        select.innerHTML = `<option value="">⌛ Carregando categorias...</option>`;
 
-        const categories = await response.json();
+        const response = await fetch(API_ROUTES.EXPENSE_CATEGORIES_EVENT_GETALL, {
+            method: 'POST'
+        });
+
+        if (!response.ok) throw new Error('Erro ao solicitar categorias via fila');
+
+        const { id: messageId } = await response.json();
+        const categories = await pollExpenseCategoryResult(messageId);
 
         select.innerHTML = '<option value="">Selecione uma categoria</option>';
-
         categories.forEach(cat => {
             const option = document.createElement('option');
             option.value = cat.id;
@@ -87,9 +92,12 @@ async function loadExpenseCategories() {
             select.appendChild(option);
         });
 
+        return categories; // útil para uso no carregamento da despesa
+
     } catch (error) {
-        console.error('Erro ao buscar categorias de despesa:', error);
-        alert('Erro ao carregar categorias de despesa.');
+        console.error('Erro ao carregar categorias via fila:', error);
+        select.innerHTML = '<option value="">❌ Erro ao carregar</option>';
+        return [];
     }
 }
 
@@ -170,42 +178,41 @@ async function loadExpenseDataToForm() {
     }
 
     try {
-        const url = API_ROUTES.EXPENSES_GETBYID_ASYNC.replace('{id}', id);
-        const response = await fetch(url);
-        if (!response.ok) throw new Error('Erro ao buscar despesa');
+        // Solicita os dados via fila
+        const response = await fetch(API_ROUTES.EXPENSES_EVENT_GETBYID(id), {
+            method: 'POST'
+        });
 
-        const expense = await response.json();
+        if (!response.ok) throw new Error('Erro ao buscar despesa via fila');
+
+        const { id: messageId } = await response.json();
+        const expense = await pollExpenseResult(messageId);
+        console.log('🚨 Dados recebidos da fila:', expense);
+
+        // Carrega categorias e marca a correta
+        const categories = await loadExpenseCategories();
+
+        const categorySelect = document.getElementById('expenseCategory');
+        categorySelect.value = expense.expenseCategoryId;
 
         // Preenche campos
         document.getElementById('name').value = expense.name;
         document.getElementById('description').value = expense.description;
         document.getElementById('amount').value = parseFloat(expense.amount).toFixed(2).replace('.', ',');
-        document.getElementById('dueDate').value = expense.dueDate.split('T')[0];
+        document.getElementById('dueDate').value = expense.dueDate ? expense.dueDate.split('T')[0] : '';
         document.getElementById('paidAt').value = expense.paidAt ? expense.paidAt.split('T')[0] : '';
         document.getElementById('isActive').checked = expense.isActive;
 
-        // Carrega categorias
-        const categorySelect = document.getElementById('expenseCategory');
-        const catResponse = await fetch(API_ROUTES.EXPENSE_CATEGORIES_ASYNC);
-        const categories = await catResponse.json();
-
-        categorySelect.innerHTML = '<option value="">Selecione uma categoria</option>';
-        categories.forEach(cat => {
-            const option = document.createElement('option');
-            option.value = cat.id;
-            option.text = cat.name;
-            if (cat.id === expense.expenseCategoryId) {
-                option.selected = true;
-            }
-            categorySelect.appendChild(option);
-        });
-
-        // Salva no localStorage para manter o createdAt
+        // Armazena dados para manter consistência na edição
         localStorage.setItem('editingExpenseCreatedAt', expense.createdAt);
 
     } catch (error) {
-        console.error('Erro ao carregar despesa:', error);
-        alert('Erro ao carregar despesa para edição.');
+        console.error('Erro ao carregar despesa via fila:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Erro',
+            text: `Erro ao carregar dados para edição: ${error.message}`
+        });
     }
 }
 
@@ -231,23 +238,28 @@ function setupExpenseEditSubmit() {
             expenseCategoryId: parseInt(getInputValue('expenseCategory')) || 0,
             isActive: getCheckboxChecked('isActive'),
             createdAt,
-            updatedAt: new Date().toISOString()
+            updatedAt: nowIso()
         };
 
         try {
-            const url = API_ROUTES.EXPENSES_UPDATE_ASYNC.replace('{id}', id);
-            const response = await fetch(url, {
+            const response = await fetch(API_ROUTES.EXPENSES_EVENT_UPDATE(id), {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(updatedExpense)
             });
 
-            if (!response.ok) throw new Error(await response.text());
+            if (!response.ok) throw new Error('Erro ao enviar atualização para a fila');
 
+            const responseJson = await response.json();
+            const messageId = responseJson.id;
+
+            const result = await pollExpenseResult(messageId);
+            console.log('🚨 Resultado do update:', result);
+            
             Swal.fire({
                 icon: 'success',
-                title: `A despesa ${updatedExpense.name} foi atualizada com sucesso!`,
-                timer: 4000,
+                title: `A despesa "${getInputValue('name')}" foi atualizada com sucesso!`,
+                timer: 3000,
                 showConfirmButton: false
             });
 
@@ -256,7 +268,7 @@ function setupExpenseEditSubmit() {
             loadContent('expense', 'expense-list');
 
         } catch (error) {
-            console.error('Erro ao atualizar:', error);
+            console.error('Erro ao atualizar via fila:', error);
             Swal.fire({
                 timer: 4000,
                 icon: 'error',
@@ -266,4 +278,32 @@ function setupExpenseEditSubmit() {
         }
     });
 }
+async function pollExpenseResult(messageId, retries = 15, delay = 1000) {
+    for (let i = 0; i < retries; i++) {
+        const res = await fetch(API_ROUTES.EXPENSES_EVENT_RESULT(messageId));
+        const data = await res.json();
 
+        if (res.status === 200 && data.processed) {
+            return data.response;
+        }
+
+        await new Promise(resolve => setTimeout(resolve, delay));
+    }
+
+    throw new Error("Tempo de espera excedido para resposta da fila.");
+}
+
+async function pollExpenseCategoryResult(messageId, retries = 15, delay = 1000) {
+    for (let i = 0; i < retries; i++) {
+        const res = await fetch(API_ROUTES.EXPENSE_CATEGORIES_EVENT_RESULT(messageId));
+        const data = await res.json();
+
+        if (res.status === 200 && data.processed) {
+            return data.response;
+        }
+
+        await new Promise(resolve => setTimeout(resolve, delay));
+    }
+
+    throw new Error("Tempo de espera excedido para resposta da fila.");
+}
