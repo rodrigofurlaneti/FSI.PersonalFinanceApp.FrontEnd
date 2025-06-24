@@ -1,5 +1,5 @@
 // 🔁 Função padrão: carrega as categorias das despesas sem ordenação
-async function loadExpensesCategories() {
+async function loadExpensesCategoriesFromMessaging() {
     const tbody = document.getElementById('expense-category-table-body');
     if (!tbody) {
         console.error('Tabela de categoria de despesas não encontrada');
@@ -111,23 +111,27 @@ function renderExpensesCategories(expenseCategories, reloadUrl) {
 
             if (result.isConfirmed) {
                 try {
-                    const deleteResponse = await fetch(`${API_ROUTES.EXPENSE_CATEGORIES_ASYNC}/${expenseCategoryId}`, {
-                        method: 'DELETE',
-                    });
+                        const deleteUrl = API_ROUTES.EXPENSE_CATEGORIES_EVENT_DELETE(expenseCategoryId);
+                        
+                        const deleteResponse = await fetch(deleteUrl, {
+                            method: 'DELETE'
+                        });
 
-                    if (!deleteResponse.ok) throw new Error('Erro ao excluir a categoria de despesa');
+                        if (!deleteResponse.ok) throw new Error('Erro ao excluir a categoria de despesa');
 
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Excluído!',
-                        text: 'Categoria de despesa excluída com sucesso.',
-                        timer: 4500,
-                        showConfirmButton: false,
-                    });
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Excluído!',
+                            text: 'Categoria de despesa excluída com sucesso.',
+                            timer: 4500,
+                            showConfirmButton: false,
+                        });
+
+                    loadContent('expense-category', 'expense-category-list'); // 🔁 Redireciona para lista atualizada
 
                     // Recarrega a partir da rota usada (ordenada ou não)
                     if (reloadUrl === API_ROUTES.EXPENSE_CATEGORIES_ASYNC) {
-                        loadExpensesCategories();
+                        loadExpensesCategoriesFromMessaging();
                     } else {
                         loadExpensesCategoriesOrdered(reloadUrl);
                     }
@@ -163,7 +167,7 @@ async function filterExpensesCategoriesByText() {
   const filterBy = document.querySelector('input[name="filterType"]:checked').value;
 
   if (input === "") {
-    await loadExpensesCategories(); // carrega tudo
+    await loadExpensesCategoriesFromMessaging(); // carrega tudo
     return;
   }
 
@@ -203,4 +207,48 @@ function renderAllExpenseCategoryViews(expensesCategories, reloadUrl) {
  
     // ✅ Chama a função para renderizar as despesas ← agora sim, com as cores certas
     renderExpensesCategories(expensesCategories, reloadUrl);
+}
+
+async function loadExpensesCategoriesFromMessaging() {
+    const tbody = document.getElementById('expense-category-table-body');
+    if (!tbody) return;
+
+    tbody.innerHTML = `<tr><td colspan="6">⌛ Enviando requisição via fila...</td></tr>`;
+
+    try {
+        // Etapa 1: Dispara requisição para a fila
+        const response = await fetch(API_ROUTES.EXPENSE_CATEGORIES_EVENT_GETALL, {
+            method: 'POST'
+        });
+
+        if (!response.ok) throw new Error("Falha ao enviar solicitação para a fila");
+
+        const result = await response.json();
+        const messageId = result.id;
+
+        // Etapa 2: Aguarda polling da resposta
+        const pollResult = await pollMessagingResult(messageId);
+
+        // Etapa 3: Renderiza as categorias
+        renderAllExpenseCategoryViews(pollResult, API_ROUTES.EXPENSE_CATEGORIES_EVENT_GETALL);
+
+    } catch (error) {
+        console.error("Erro ao carregar categorias via mensageria:", error);
+        tbody.innerHTML = `<tr><td colspan="6">❌ Erro: ${error.message}</td></tr>`;
+    }
+}
+
+async function pollMessagingResult(messageId, retries = 15, delay = 1000) {
+    for (let i = 0; i < retries; i++) {
+        const res = await fetch(API_ROUTES.EXPENSE_CATEGORIES_EVENT_RESULT(messageId));
+        const data = await res.json();
+
+        if (res.status === 200 && data.processed) {
+            return data.response;
+        }
+
+        await new Promise(resolve => setTimeout(resolve, delay));
+    }
+
+    throw new Error("Tempo de espera excedido para resposta da fila.");
 }

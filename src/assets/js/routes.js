@@ -28,6 +28,14 @@ const API_ROUTES = {
     EXPENSE_CATEGORIES_UPDATE_ASYNC: `${API_BASE_URL}/expense-categories/async/{id}`,
     EXPENSE_CATEGORIES_UPDATE_SYNC: `${API_BASE_URL}/expense-categories/sync/{id}`,
 
+    // Expense Categories - Event Driven via Messaging
+    EXPENSE_CATEGORIES_EVENT_CREATE: `${API_BASE_URL}/expense-categories/async/event/create`,
+    EXPENSE_CATEGORIES_EVENT_GETALL: `${API_BASE_URL}/expense-categories/async/event/getall`,
+    EXPENSE_CATEGORIES_EVENT_GETBYID: (id) => `${API_BASE_URL}/expense-categories/async/event/getbyid/${id}`,
+    EXPENSE_CATEGORIES_EVENT_UPDATE: (id) => `${API_BASE_URL}/expense-categories/async/event/update/${id}`,
+    EXPENSE_CATEGORIES_EVENT_DELETE: (id) => `${API_BASE_URL}/expense-categories/async/event/delete/${id}`,
+    EXPENSE_CATEGORIES_EVENT_RESULT: (messagingId) => `${API_BASE_URL}/expense-categories/async/event/result/${messagingId}`,
+
     // Incomes
     INCOMES_ASYNC: `${API_BASE_URL}/incomes/async`,
     INCOMES_SYNC: `${API_BASE_URL}/incomes/sync`,

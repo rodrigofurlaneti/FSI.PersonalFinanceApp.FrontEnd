@@ -88,3 +88,64 @@ function setupExpenseCategoryForm() {
         }
     });
 }
+
+function setupExpenseCategoryFormUsingMessaging() {
+    const form = document.getElementById('expenseCategoryForm');
+    if (!form) {
+        console.error('Formulário não encontrado');
+        return;
+    }
+
+    form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        if (!validateExpenseCategoryFormFields()) return;
+
+        const data = {
+            id: 0,
+            name: getInputValue('name'),
+            isActive: getCheckboxChecked('isActive'),
+            createdAt: nowIso(),
+            updatedAt: nowIso()
+        };
+
+        console.log('📩 Enviando para fila via mensageria:', data);
+
+        try {
+            const response = await fetch(API_ROUTES.EXPENSE_CATEGORIES_EVENT_CREATE, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                const errorDetail = await response.text();
+                throw new Error(`Erro ao enviar categoria para a fila. Detalhe: ${errorDetail}`);
+            }
+
+            const result = await response.json();
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Solicitação enviada!',
+                text: `Categoria "${data.name}" enviada para a fila com sucesso.`,
+                //footer: `ID da mensagem: ${result.id}`,
+                timer: 4000,
+                showConfirmButton: false
+            });
+
+            loadContent('expense-category', 'expense-category-list');
+
+        } catch (error) {
+            console.error('Erro ao enviar categoria de despesa:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Erro ao enviar!',
+                text: `Falha ao processar a solicitação.`,
+                footer: `<a href="#">${error.message}</a>`
+            });
+        }
+    });
+}

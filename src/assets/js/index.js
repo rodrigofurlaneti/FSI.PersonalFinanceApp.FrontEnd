@@ -44,14 +44,14 @@ function handlePageLoad(model, page) {
             setupExpenseEditSubmit();
             break;
         case 'expense-category/expense-category-list':
-            loadExpensesCategories();
+            loadExpensesCategoriesFromMessaging();
             break;
         case 'expense-category/expense-category-insert':
-            setupExpenseCategoryForm();
+            setupExpenseCategoryFormUsingMessaging();
             break;
         case 'expense-category/expense-category-update':
             loadExpenseCategoryDataToForm();
-            setupExpenseCategoryEditSubmit();
+            setupExpenseCategoryEditSubmitUsingMessaging();
             break;
         case 'expense/expense-update':
             loadExpenseDataToForm();

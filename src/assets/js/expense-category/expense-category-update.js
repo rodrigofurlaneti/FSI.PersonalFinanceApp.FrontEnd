@@ -191,3 +191,59 @@ function setupExpenseCategoryEditSubmit() {
         }
     });
 }
+
+function setupExpenseCategoryEditSubmitUsingMessaging() {
+    const form = document.getElementById('expenseCategoryFormUpdate');
+    if (!form) return;
+
+    form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const id = localStorage.getItem('editingExpenseCategoryId');
+        const createdAt = localStorage.getItem('editingExpenseCategoryCreatedAt') || new Date().toISOString();
+
+        if (!id || !validateExpenseCategoryFormFields()) return;
+
+        const updatedExpenseCategory = {
+            id: parseInt(id),
+            name: getInputValue('name'),
+            isActive: getCheckboxChecked('isActive'),
+            createdAt,
+            updatedAt: new Date().toISOString()
+        };
+
+        try {
+            const url = API_ROUTES.EXPENSE_CATEGORIES_EVENT_UPDATE(id);
+            const response = await fetch(url, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedExpenseCategory)
+            });
+
+            if (!response.ok) throw new Error(await response.text());
+
+            const result = await response.json();
+
+            Swal.fire({
+                icon: 'success',
+                title: `📝 Categoria "${updatedExpenseCategory.name}" enviada para atualização com sucesso!`,
+                //footer: `ID da mensagem: ${result.id}`,
+                timer: 4000,
+                showConfirmButton: false
+            });
+
+            localStorage.removeItem('editingExpenseCategoryId');
+            localStorage.removeItem('editingExpenseCategoryCreatedAt');
+            loadContent('expense-category', 'expense-category-list');
+
+        } catch (error) {
+            console.error('Erro ao atualizar via mensageria:', error);
+            Swal.fire({
+                icon: 'error',
+                title: `Erro ao atualizar categoria ${updatedExpenseCategory.name}`,
+                text: error.message,
+                footer: 'Tente novamente mais tarde ou verifique os logs.'
+            });
+        }
+    });
+}
