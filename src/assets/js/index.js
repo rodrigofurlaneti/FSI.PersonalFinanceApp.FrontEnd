@@ -68,10 +68,10 @@ function handlePageLoad(model, page) {
             setupIncomeEditSubmit();
             break;
         case 'income-category/income-category-list':
-            loadIncomesCategories();
+            loadIncomesCategoriesFromMessaging();
             break;
         case 'income-category/income-category-insert':
-            setupIncomeCategoryForm();
+            setupIncomeCategoryFormUsingMessaging();
             break;
         case 'income-category/income-category-update':
             loadIncomeCategoryDataToForm();

@@ -13,7 +13,7 @@ function nowIso() {
     return new Date().toISOString();
 }
 
-// ✅ Validação para categoria de despesa
+// ✅ Validação para categoria de renda
 function validateIncomeCategoryFormFields() {
     const name = getInputValue('name');
 
@@ -31,14 +31,14 @@ function validateIncomeCategoryFormFields() {
 }
 
 // ✅ Função principal do formulário
-function setupIncomeCategoryForm() {
+function setupIncomeCategoryFormUsingMessaging() {
     const form = document.getElementById('incomeCategoryForm');
     if (!form) {
         console.error('Formulário não encontrado');
         return;
     }
 
-    form.addEventListener('submit', async function(e) {
+    form.addEventListener('submit', async function (e) {
         e.preventDefault();
 
         if (!validateIncomeCategoryFormFields()) return;
@@ -48,13 +48,13 @@ function setupIncomeCategoryForm() {
             name: getInputValue('name'),
             isActive: getCheckboxChecked('isActive'),
             createdAt: nowIso(),
-            updatedAt: nowIso(),
+            updatedAt: nowIso()
         };
 
-        console.log('Enviando dados para API:', data);
+        console.log('📩 Enviando para fila via mensageria:', data);
 
         try {
-            const response = await fetch(API_ROUTES.INCOME_CATEGORIES_SYNC, {
+            const response = await fetch(API_ROUTES.INCOME_CATEGORIES_EVENT_CREATE, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -64,25 +64,28 @@ function setupIncomeCategoryForm() {
 
             if (!response.ok) {
                 const errorDetail = await response.text();
-                throw new Error(`Erro ao salvar categoria de renda ${data.name}. Detalhe erro: ${errorDetail}`);
+                throw new Error(`Erro ao enviar categoria para a fila. Detalhe: ${errorDetail}`);
             }
 
+            const result = await response.json();
+
             Swal.fire({
-                title: `A categoria de renda ${data.name} cadastrada com sucesso!`,
-                icon: "success",
-                timer: 2000,
+                icon: 'success',
+                title: 'Solicitação enviada!',
+                text: `Categoria "${data.name}" enviada para a fila com sucesso.`,
+                //footer: `ID da mensagem: ${result.id}`,
+                timer: 4000,
                 showConfirmButton: false
             });
 
             loadContent('income-category', 'income-category-list');
 
         } catch (error) {
-            console.error('Erro:', error);
+            console.error('Erro ao enviar categoria de renda:', error);
             Swal.fire({
-                icon: "error",
-                title: "Oops...",
-                timer: 4000,
-                text: `Erro ao cadastrar a categoria de renda ${data.name}!`,
+                icon: 'error',
+                title: 'Erro ao enviar!',
+                text: `Falha ao processar a solicitação.`,
                 footer: `<a href="#">${error.message}</a>`
             });
         }

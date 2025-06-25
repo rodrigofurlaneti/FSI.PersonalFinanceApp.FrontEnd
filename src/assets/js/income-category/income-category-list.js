@@ -1,6 +1,5 @@
 // 🔁 Função padrão: carrega as categorias das rendas sem ordenação
-async function loadIncomesCategories() {
-
+async function loadIncomesCategoriesFromMessaging() {
     const tbody = document.getElementById('income-category-table-body');
     if (!tbody) {
         console.error('Tabela de categoria de rendas não encontrada');
@@ -20,9 +19,8 @@ async function loadIncomesCategories() {
         renderAllIncomeCategoryViews(incomeCategories, API_ROUTES.INCOME_CATEGORIES_ASYNC);
 
     } catch (error) {
-        tbody.innerHTML = `<tr><td colspan="6">Erro ao carregar a categoria de renda: ${error.message}</td></tr>`;
-
-        console.error('Erro ao buscar a categoria de rendas:', error);
+        tbody.innerHTML = `<tr><td colspan="6">Erro ao carregar categoria rendas: ${error.message}</td></tr>`;
+        console.error('Erro ao buscar categoria de rendas:', error);
     }
 }
 
@@ -30,7 +28,7 @@ async function loadIncomesCategories() {
 async function loadIncomesCategoriesOrdered(apiUrl) {
     const tbody = document.getElementById('income-category-table-body');
     if (!tbody) {
-        console.error('Tabela de categoria de rendas não encontrada');
+        console.error('Tabela de categoria rendas não encontrada');
         return;
     }
 
@@ -113,23 +111,27 @@ function renderIncomesCategories(incomeCategories, reloadUrl) {
 
             if (result.isConfirmed) {
                 try {
-                    const deleteResponse = await fetch(`${API_ROUTES.INCOME_CATEGORIES_ASYNC}/${incomeCategoryId}`, {
-                        method: 'DELETE',
-                    });
+                        const deleteUrl = API_ROUTES.INCOME_CATEGORIES_EVENT_DELETE(incomeCategoryId);
+                        
+                        const deleteResponse = await fetch(deleteUrl, {
+                            method: 'DELETE'
+                        });
 
-                    if (!deleteResponse.ok) throw new Error('Erro ao excluir a categoria de renda');
+                        if (!deleteResponse.ok) throw new Error('Erro ao excluir a categoria de renda');
 
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Excluído!',
-                        text: `A categoria de renda "${incomeCategoryName}" foi excluída com sucesso.`,
-                        timer: 4500,
-                        showConfirmButton: false,
-                    });
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Excluído!',
+                            text: 'Categoria de renda excluída com sucesso.',
+                            timer: 4500,
+                            showConfirmButton: false,
+                        });
+
+                    loadContent('income-category', 'income-category-list'); // 🔁 Redireciona para lista atualizada
 
                     // Recarrega a partir da rota usada (ordenada ou não)
                     if (reloadUrl === API_ROUTES.INCOME_CATEGORIES_ASYNC) {
-                        loadIncomesCategories();
+                        loadIncomesCategoriesFromMessaging();
                     } else {
                         loadIncomesCategoriesOrdered(reloadUrl);
                     }
@@ -139,7 +141,7 @@ function renderIncomesCategories(incomeCategories, reloadUrl) {
                         icon: 'error',
                         title: 'Erro',
                         timer: 4000,
-                        text: `Falha ao excluir a categoria de renda "${incomeCategoryName}" Erro: ${error.message}`,
+                        text: `Falha ao excluir categoria renda: ${error.message}`,
                     });
                 }
             }
@@ -165,7 +167,7 @@ async function filterIncomesCategoriesByText() {
   const filterBy = document.querySelector('input[name="filterType"]:checked').value;
 
   if (input === "") {
-    await loadIncomesCategories(); // carrega tudo
+    await loadIncomesCategoriesFromMessaging(); // carrega tudo
     return;
   }
 
@@ -180,7 +182,7 @@ async function filterIncomesCategoriesByText() {
 
     renderAllIncomeCategoryViews(filtered, API_ROUTES.INCOME_CATEGORIES_ASYNC);
   } catch (error) {
-    console.error(`Erro ao filtrar a categoria de renda ${input}. Detalhe erro:`, error);
+    console.error("Erro ao filtrar categoria rendas:", error);
   }
 }
 
@@ -205,4 +207,48 @@ function renderAllIncomeCategoryViews(incomesCategories, reloadUrl) {
  
     // ✅ Chama a função para renderizar as rendas ← agora sim, com as cores certas
     renderIncomesCategories(incomesCategories, reloadUrl);
+}
+
+async function loadIncomesCategoriesFromMessaging() {
+    const tbody = document.getElementById('income-category-table-body');
+    if (!tbody) return;
+
+    tbody.innerHTML = `<tr><td colspan="6">⌛ Enviando requisição via fila...</td></tr>`;
+
+    try {
+        // Etapa 1: Dispara requisição para a fila
+        const response = await fetch(API_ROUTES.INCOME_CATEGORIES_EVENT_GETALL, {
+            method: 'POST'
+        });
+
+        if (!response.ok) throw new Error("Falha ao enviar solicitação para a fila");
+
+        const result = await response.json();
+        const messageId = result.id;
+
+        // Etapa 2: Aguarda polling da resposta
+        const pollResult = await pollMessagingResult(messageId);
+
+        // Etapa 3: Renderiza as categorias
+        renderAllIncomeCategoryViews(pollResult, API_ROUTES.INCOME_CATEGORIES_EVENT_GETALL);
+
+    } catch (error) {
+        console.error("Erro ao carregar categorias via mensageria:", error);
+        tbody.innerHTML = `<tr><td colspan="6">❌ Erro: ${error.message}</td></tr>`;
+    }
+}
+
+async function pollMessagingResult(messageId, retries = 15, delay = 1000) {
+    for (let i = 0; i < retries; i++) {
+        const res = await fetch(API_ROUTES.INCOME_CATEGORIES_EVENT_RESULT(messageId));
+        const data = await res.json();
+
+        if (res.status === 200 && data.processed) {
+            return data.response;
+        }
+
+        await new Promise(resolve => setTimeout(resolve, delay));
+    }
+
+    throw new Error("Tempo de espera excedido para resposta da fila.");
 }

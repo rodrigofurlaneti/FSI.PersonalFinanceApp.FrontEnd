@@ -56,6 +56,14 @@ const API_ROUTES = {
     INCOMES_UPDATE_ASYNC: `${API_BASE_URL}/incomes/async/{id}`,
     INCOMES_UPDATE_SYNC: `${API_BASE_URL}/incomes/sync/{id}`,
 
+    // Incomes - Event Driven via Messaging
+    INCOMES_EVENT_CREATE: `${API_BASE_URL}/incomes/async/event/create`,
+    INCOMES_EVENT_GETALL: `${API_BASE_URL}/incomes/async/event/getall`,
+    INCOMES_EVENT_GETBYID: (id) => `${API_BASE_URL}/incomes/async/event/getbyid/${id}`,
+    INCOMES_EVENT_UPDATE: (id) => `${API_BASE_URL}/incomes/async/event/update/${id}`,
+    INCOMES_EVENT_DELETE: (id) => `${API_BASE_URL}/incomes/async/event/delete/${id}`,
+    INCOMES_EVENT_RESULT: (messagingId) => `${API_BASE_URL}/incomes/async/event/result/${messagingId}`,
+
     //Income Categories
     INCOME_CATEGORIES_ASYNC: `${API_BASE_URL}/income-categories/async`,
     INCOME_CATEGORIES_SYNC: `${API_BASE_URL}/income-categories/sync`,
@@ -66,6 +74,14 @@ const API_ROUTES = {
     INCOME_CATEGORIES_GETBYID_SYNC: `${API_BASE_URL}/income-categories/sync/{id}`,
     INCOME_CATEGORIES_UPDATE_ASYNC: `${API_BASE_URL}/income-categories/async/{id}`,
     INCOME_CATEGORIES_UPDATE_SYNC: `${API_BASE_URL}/income-categories/sync/{id}`,
+
+    // Income Categories - Event Driven via Messaging
+    INCOME_CATEGORIES_EVENT_CREATE: `${API_BASE_URL}/income-categories/async/event/create`,
+    INCOME_CATEGORIES_EVENT_GETALL: `${API_BASE_URL}/income-categories/async/event/getall`,
+    INCOME_CATEGORIES_EVENT_GETBYID: (id) => `${API_BASE_URL}/income-categories/async/event/getbyid/${id}`,
+    INCOME_CATEGORIES_EVENT_UPDATE: (id) => `${API_BASE_URL}/income-categories/async/event/update/${id}`,
+    INCOME_CATEGORIES_EVENT_DELETE: (id) => `${API_BASE_URL}/income-categories/async/event/delete/${id}`,
+    INCOME_CATEGORIES_EVENT_RESULT: (messagingId) => `${API_BASE_URL}/income-categories/async/event/result/${messagingId}`,
 
     CONFIG: `${API_BASE_URL}/settings/async`,
 };

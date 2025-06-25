@@ -41,7 +41,6 @@ function validateIncomeCategoryFormFields() {
             Swal.fire({
                 icon: 'warning',
                 title: 'Campo obrigatório!',
-                timer: 4000,
                 text: `O campo "${field.label}" deve ser preenchido.`,
             });
             return false;
@@ -89,13 +88,12 @@ function setupIncomeCategoryForm() {
 
             if (!response.ok) {
                 const errorDetail = await response.text();
-                throw new Error(`Erro ao atualizar a categoria de renda ${data.name}. Detalhe: ${errorDetail}`);
+                throw new Error(`Erro ao salvar a categoria de renda ${data.name}. Detalhe erro: ${errorDetail}`);
             }
 
             Swal.fire({
                 title: `A categoria de renda ${data.name} foi atualizada com sucesso!`,
                 icon: "success",
-                timer: 4000,
                 draggable: true
             });
 
@@ -106,7 +104,6 @@ function setupIncomeCategoryForm() {
             Swal.fire({
                 icon: "error",
                 title: "Oops...",
-                timer: 4000,
                 text: `Erro ao atualizar a categoria de renda ${data.name}!`,
                 footer: `<a href="#">${error.message}</a>`
             });
@@ -175,7 +172,7 @@ function setupIncomeCategoryEditSubmit() {
             Swal.fire({
                 icon: 'success',
                 title: `A categoria de renda ${updatedIncomeCategory.name} atualizada com sucesso!`,
-                timer: 2000,
+                timer: 4000,
                 showConfirmButton: false
             });
 
@@ -188,8 +185,64 @@ function setupIncomeCategoryEditSubmit() {
             Swal.fire({
                 icon: 'error',
                 timer: 4000,
-                title: `Erro ao atualizar a categoria de renda ${updatedIncomeCategory.name}`,
+                title: `Erro ao atualizar categoria de renda ${updatedIncomeCategory.name}`,
                 text: error.message
+            });
+        }
+    });
+}
+
+function setupIncomeCategoryEditSubmitUsingMessaging() {
+    const form = document.getElementById('incomeCategoryFormUpdate');
+    if (!form) return;
+
+    form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const id = localStorage.getItem('editingIncomeCategoryId');
+        const createdAt = localStorage.getItem('editingIncomeCategoryCreatedAt') || new Date().toISOString();
+
+        if (!id || !validateIncomeCategoryFormFields()) return;
+
+        const updatedIncomeCategory = {
+            id: parseInt(id),
+            name: getInputValue('name'),
+            isActive: getCheckboxChecked('isActive'),
+            createdAt,
+            updatedAt: new Date().toISOString()
+        };
+
+        try {
+            const url = API_ROUTES.INCOME_CATEGORIES_EVENT_UPDATE(id);
+            const response = await fetch(url, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedIncomeCategory)
+            });
+
+            if (!response.ok) throw new Error(await response.text());
+
+            const result = await response.json();
+
+            Swal.fire({
+                icon: 'success',
+                title: `📝 Categoria "${updatedIncomeCategory.name}" enviada para atualização com sucesso!`,
+                //footer: `ID da mensagem: ${result.id}`,
+                timer: 4000,
+                showConfirmButton: false
+            });
+
+            localStorage.removeItem('editingIncomeCategoryId');
+            localStorage.removeItem('editingIncomeCategoryCreatedAt');
+            loadContent('income-category', 'income-category-list');
+
+        } catch (error) {
+            console.error('Erro ao atualizar via mensageria:', error);
+            Swal.fire({
+                icon: 'error',
+                title: `Erro ao atualizar categoria ${updatedIncomeCategory.name}`,
+                text: error.message,
+                footer: 'Tente novamente mais tarde ou verifique os logs.'
             });
         }
     });
