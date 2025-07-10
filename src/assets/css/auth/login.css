@@ -1,0 +1,122 @@
+/* Layout principal */
+.login-wrapper {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f5f7fa;
+  z-index: 999;
+}
+
+.login-card {
+  background: #fff;
+  padding: 2.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  width: min(90vw, 420px);
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.secure-header {
+  display: flex;
+  align-items: center;
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 1.5rem;
+}
+
+.lock-icon {
+  font-size: 1.1rem;
+  margin-right: 0.5rem;
+}
+
+h1 {
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  color: #333;
+}
+
+.input-group {
+  position: relative;
+  margin-bottom: 1.75rem;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 1rem 3rem 0.5rem 0.75rem;
+  border: none;
+  border-bottom: 2px solid #00aaff;
+  background: #f2f2f2;
+  font-size: 1rem;
+  border-radius: 0.5rem;
+  outline: none;
+}
+
+.input-group label {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  color: #888;
+  font-size: 0.9rem;
+  pointer-events: none;
+  transition: all 0.2s ease;
+}
+
+.input-group input:focus + label,
+.input-group input:valid + label {
+  top: -0.6rem;
+  left: 0.5rem;
+  font-size: 0.75rem;
+  color: #00aaff;
+  background: transparent;
+  padding: 0 0.25rem;
+  border-radius: 4px;
+  transform: scale(1);
+}
+
+.toggle-password {
+  position: absolute;
+  top: 50%;
+  right: 1rem;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 1.1rem;
+  color: #00aaff;
+}
+
+button[type="submit"] {
+  width: 100%;
+  padding: 0.9rem;
+  background: #00aaff;
+  color: white;
+  border: none;
+  border-radius: 2rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+button[disabled] {
+  background: #e0e0e0;
+  color: #aaa;
+  cursor: not-allowed;
+}
+
+.error {
+  color: red;
+  margin-top: 0.75rem;
+  text-align: center;
+}
+
+.forgot-password {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.forgot-password a {
+  text-decoration: none;
+  color: #007bff;
+  font-size: 0.9rem;
+  font-weight: 600;
+}

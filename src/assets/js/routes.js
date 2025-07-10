@@ -4,6 +4,14 @@ const API_BASE_URL = "https://localhost:7124/api";
 
 const API_ROUTES = {
 
+    // Authentication - Async (Polling direto)
+    AUTHENTICATION_ASYNC: `${API_BASE_URL}/authentications/async`,
+    AUTHENTICATION_GETBYID_ASYNC: (id) => `${API_BASE_URL}/authentications/async/${id}`,
+
+    // Authentication - Event Driven
+    AUTHENTICATION_EVENT_CREATE: `${API_BASE_URL}/authentications/async/event/create`,
+    AUTHENTICATION_EVENT_RESULT: (messagingId) => `${API_BASE_URL}/authentications/async/event/result/${messagingId}`,
+
     // Expenses
     EXPENSES_ASYNC: `${API_BASE_URL}/expenses/async`,
     EXPENSES_ORDERED_ASYNC: (orderBy, direction = 'asc') => `${API_BASE_URL}/expenses/async/ordered?orderBy=${orderBy}&direction=${direction}`,
